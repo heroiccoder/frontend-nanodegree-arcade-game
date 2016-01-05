@@ -1,3 +1,10 @@
 body {
     text-align: center;
 }
+
+.fifth {
+	width: 19%;
+	border: 1px;
+	border-color : red;
+	display:inline;
+}

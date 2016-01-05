@@ -39,20 +39,22 @@ Enemy.prototype.checkCollision = function()
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
-    if(this.checkCollision())
+    if(game.active)
     {
-        game.lost();
-    } else {
-        if(this.x <505)
+        if(this.checkCollision())
         {
-            this.x = this.x + this.speed * dt;
+            game.loseLife();
         } else {
-            this.x = -100;
-            this.line = Math.floor(Math.random() * 3) + 1;
-            this.y = lines[this.line];
+            if(this.x <505)
+            {
+                this.x = this.x + this.speed * dt;
+            } else {
+                this.x = -100;
+                this.line = Math.floor(Math.random() * 3) + 1;
+                this.y = lines[this.line];
+            }
         }
     }
-
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
@@ -63,7 +65,57 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+var UserInterface = function() {
+
+};
+
+UserInterface.prototype.start = function()
+{
+    game.start();
+    player.playerName = document.getElementById('playerName').value;
+    document.getElementById('startButton').setAttribute("disabled", "disabled");
+    document.getElementById('playerName').setAttribute("disabled", "disabled");
+};
+
+UserInterface.prototype.updateScore = function(score)
+{
+    document.getElementById('score').innerText = ''+score;
+};
+
+UserInterface.prototype.updateLevel = function(level)
+{
+    document.getElementById('level').innerText = ''+level;
+};
+
+UserInterface.prototype.updateLives = function(lives)
+{
+    var images = '';
+    for(var i = 0; i < lives; i++)
+    {
+        images = images + '<img src="images/Heart.png" height="50px" />';
+    }
+    document.getElementById('livesLeft').innerHTML = images;
+};
+
+UserInterface.prototype.lost = function()
+{
+    document.getElementById('highScore').innerText = game.highestScore;
+    document.getElementById('startButton').removeAttribute("disabled");
+    document.getElementById('playerName').removeAttribute("disabled");
+    if(game.highestScore == game.score)
+    {
+        document.getElementById('playerHighScore').innerText = player.playerName;
+        alert("Congrats!! You achieved a new high score!");
+    } else {
+        alert("Game Over! Try again!");
+    }
+};
+
+var ui = new UserInterface();
+
+
 var Game = function() {
+    this.highestScore=0;
     this.init();
 };
 
@@ -72,22 +124,35 @@ Game.prototype.init = function()
     this.level = 1;
     this.baseSpeed = 40;
     this.score = 0;
+    this.active = false;
 };
-
-var UserInterface = function() {
-
-};
-
-UserInterface.prototype.lost = function()
-{
-    console.log("Game Lost");
-};
-
-var ui = new UserInterface();
 
 Game.prototype.lost = function()
 {
+    if(this.score>this.highestScore)
+    {
+        this.highestScore = this.score;
+    }
     ui.lost();
+    this.stop();
+};
+
+Game.prototype.loseLife = function()
+{
+    if(--player.lives == 0)
+    {
+        this.lost();
+    } else {
+        var lives = player.lives;
+        ui.updateLives(player.lives);
+        game.reset();
+        player.lives = lives;
+    }
+};
+
+Game.prototype.stop = function()
+{
+    this.active = false;
 };
 
 Game.prototype.instantiateEnemies = function(enemiesLeft) {
@@ -106,17 +171,23 @@ Game.prototype.enemies = function() {
 Game.prototype.reset = function() {
     allEnemies = [];
     this.instantiateEnemies(this.enemies());
+    var playerName = player.playerName;
     player = new Player();
+    player.playerName = playerName;
 };
 
 Game.prototype.start = function() {
+    this.init();
     this.reset();
+    this.active = true;
 };
 
 Game.prototype.levelUp = function() {
     this.level = this.level + 1;
     this.score = this.score + this.level * 100;
     this.baseSpeed = this.baseSpeed * 1.1;
+    ui.updateLevel(this.level);
+    ui.updateScore(this.score);
     this.reset();
 };
 
@@ -132,7 +203,13 @@ var Player = function() {
     this.y = lines[this.line];
     this.lives = 3;
     this.width = 80;
+    this.playerName='';
 };
+
+Player.prototype.updateCharacter = function(character)
+{
+    this.sprite = character;
+}
 
 Player.prototype.updateX = function() {
     this.x = columns[this.column];
@@ -199,46 +276,51 @@ Player.prototype.checkBottomBoundary= function() {
     }*/
 };
 Player.prototype.update = function() {
-    if(this.lastPressedKey!=undefined)
+    if(game.active)
     {
-        switch(this.lastPressedKey)
+        if(this.lastPressedKey!=undefined)
         {
-            case 'left':
-                if(this.checkLeftBoundary())
-                {
-                    this.column = this.column-1;
-                    this.updateX();
-                }
-                break;
-            case 'right':
-                if(this.checkRightBoundary())
-                {
-                    this.column = this.column+1;
-                    this.updateX();
-                }
-                break;
-            case 'up':
-                if(this.checkUpperBoundary())
-                {
-                    this.line = this.line-1;
-                    this.updateY();
-                }
-                break;
-            case 'down':
-                if(this.checkBottomBoundary())
-                {
-                    this.line = this.line+1;
-                    this.updateY();
-                }
-                break;
-            default:
-                break;
+            switch(this.lastPressedKey)
+            {
+                case 'left':
+                    if(this.checkLeftBoundary())
+                    {
+                        this.column = this.column-1;
+                        this.updateX();
+                    }
+                    break;
+                case 'right':
+                    if(this.checkRightBoundary())
+                    {
+                        this.column = this.column+1;
+                        this.updateX();
+                    }
+                    break;
+                case 'up':
+                    if(this.checkUpperBoundary())
+                    {
+                        this.line = this.line-1;
+                        this.updateY();
+                    }
+                    break;
+                case 'down':
+                    if(this.checkBottomBoundary())
+                    {
+                        this.line = this.line+1;
+                        this.updateY();
+                    }
+                    break;
+                default:
+                    break;
+            }
+            this.lastPressedKey=undefined;
         }
+        if(this.line == 0)
+        {
+            game.levelUp();
+        }
+    } else {
         this.lastPressedKey=undefined;
-    }
-    if(this.line == 0)
-    {
-        game.levelUp();
     }
 };
 
