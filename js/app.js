@@ -1,7 +1,4 @@
 // Enemies our player must avoid
-var lineOne = 60;
-var lineTwo = 140;
-var lineThree = 223;
 var lines = [0, 60, 140, 223, 306, 390];
 var columns = [0, 101, 202, 303, 404];
 var Enemy = function() {
@@ -17,17 +14,15 @@ var Enemy = function() {
     this.speed = Math.floor(Math.random() * game.maxSpeed()) + game.baseSpeed;
     this.width = 101;
 };
-var laneHeight = 80;
-var laneWidth = 100;
 
 Enemy.prototype.checkCollision = function()
 {
     if(this.line == player.line)
     {
-        leftPlayerBorder = player.x+20;
-        rightPlayerBorder = player.x+player.width;
-        leftEnemyBorder = this.x+2;
-        rightEnemyBorder = this.x-2+this.width;
+        var leftPlayerBorder = player.x+20;
+        var rightPlayerBorder = player.x+player.width;
+        var leftEnemyBorder = this.x+2;
+        var rightEnemyBorder = this.x-2+this.width;
         if((rightEnemyBorder >= leftPlayerBorder && leftPlayerBorder >= this.x) || (rightPlayerBorder >= leftEnemyBorder && rightPlayerBorder <= rightEnemyBorder))
         {
             // There is a collision
@@ -139,7 +134,7 @@ Game.prototype.lost = function()
 
 Game.prototype.loseLife = function()
 {
-    if(--player.lives == 0)
+    if(--player.lives === 0)
     {
         this.lost();
     } else {
@@ -209,7 +204,7 @@ var Player = function() {
 Player.prototype.updateCharacter = function(character)
 {
     this.sprite = character;
-}
+};
 
 Player.prototype.updateX = function() {
     this.x = columns[this.column];
@@ -278,7 +273,7 @@ Player.prototype.checkBottomBoundary= function() {
 Player.prototype.update = function() {
     if(game.active)
     {
-        if(this.lastPressedKey!=undefined)
+        if(this.lastPressedKey!==undefined)
         {
             switch(this.lastPressedKey)
             {
@@ -315,7 +310,7 @@ Player.prototype.update = function() {
             }
             this.lastPressedKey=undefined;
         }
-        if(this.line == 0)
+        if(this.line === 0)
         {
             game.levelUp();
         }
