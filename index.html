@@ -1,13 +1,125 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Effective JavaScript: Frogger</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
 </head>
+
 <body>
-    <script src="js/resources.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/engine.js"></script>
+    <header>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <h1>Effective Javascript: Frogger</h1>
+            </div>
+        </div>
+        <header>
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="col-lg-3 col-md-2 col-sm-12">
+                        <form class="form-horizontal">
+                            <fieldset>
+                                <legend>Game Progress</legend>
+                                <div class="form-group">
+                                    <label class="col-lg-3">
+                                        Lives Left:
+                                    </label>
+                                    <div class="col-lg-9" id="livesLeft">
+                                        <img src="images/Heart.png" height="50px" />
+                                        <img src="images/Heart.png" height="50px" />
+                                        <img src="images/Heart.png" height="50px" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-3">
+                                        Level:
+                                    </label>
+                                    <div class="col-lg-9">
+                                        <h2 id="level">1</h2>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-3">
+                                        Score:
+                                    </label>
+                                    <div class="col-lg-9">
+                                        <h2 id="score">0</h2>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-3">
+                                        Highest Score:
+                                    </label>
+                                    <div class="col-lg-9">
+                                        <h2 id="highScore">0</h2>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-3">
+                                        By:
+                                    </label>
+                                    <div class="col-lg-9">
+                                        <h2 id="playerHighScore"></h2>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                    <div class="col-lg-6 col-md-8 col-sm-12" id="game">
+
+                    </div>
+                    <div class="col-lg-3 col-md-2 col-sm-12" id="options">
+                        <form class="form-horizontal">
+                            <fieldset>
+                                <legend>Player Options</legend>
+                                <div class="form-group">
+                                    <label for="playerName" class="col-lg-2">
+                                        Insert your name
+                                    </label>
+                                    <div class="col-lg-10">
+                                        <input type="text" class="form-control" id="playerName" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="playerName" class="col-lg-2">
+                                        Choose your character
+                                    </label>
+                                    <div class="col-lg-10">
+                                        <div class="fifth">
+                                            <img src="images/char-boy.png" onclick="player.updateCharacter('images/char-boy.png');" />
+                                        </div>
+                                        <div class="fifth">
+                                            <img src="images/char-cat-girl.png" onclick="player.updateCharacter('images/char-cat-girl.png');" />
+                                        </div>
+                                        <div class="fifth">
+                                            <img src="images/char-horn-girl.png" onclick="player.updateCharacter('images/char-horn-girl.png');" />
+                                        </div>
+                                        <div class="fifth">
+                                            <img src="images/char-pink-girl.png" onclick="player.updateCharacter('images/char-pink-girl.png');" />
+                                        </div>
+                                        <div class="fifth">
+                                            <img src="images/char-princess-girl.png" onclick="player.updateCharacter('images/char-princess-girl.png');" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-success" onclick="ui.start();" id="startButton">Start game!</button>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <footer>
+                <div class="container-fluid">
+                    <div class="row-fluid">
+                        <h6>By Heroic Coder</h6>
+                    </div>
+                </div>
+            </footer>
+            <script src="js/resources.js"></script>
+            <script src="js/app.js"></script>
+            <script src="js/engine.js"></script>
 </body>
+
 </html>

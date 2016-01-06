@@ -1,26 +1,55 @@
 // Enemies our player must avoid
-var lineOne = 60;
-var lineTwo = 140;
-var lineThree = 223;
-var lines = [60, 140, 223, 306, 390];
-var columns = [0, 100, 200, 300, 400];
+var lines = [0, 60, 140, 223, 306, 390];
+var columns = [0, 101, 202, 303, 404];
 var Enemy = function() {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
-    this.x = 0;
-    this.y = Math.floor(Math.random() * 2) + 0;
+    this.x = Math.floor(Math.random() * 600) - 100;
+    this.line = Math.floor(Math.random() * 3) + 1;
+    this.y = lines[this.line];
     this.sprite = 'images/enemy-bug.png';
-    this.speed = Math.floor(Math.random() * game.maxSpeed()) + game.baseSpeed;  
+    this.speed = Math.floor(Math.random() * game.maxSpeed()) + game.baseSpeed;
+    this.width = 101;
 };
-var laneHeight = 80;
-var laneWidth = 100;
+
+Enemy.prototype.checkCollision = function()
+{
+    if(this.line == player.line)
+    {
+        var leftPlayerBorder = player.x+20;
+        var rightPlayerBorder = player.x+player.width;
+        var leftEnemyBorder = this.x+2;
+        var rightEnemyBorder = this.x-2+this.width;
+        if((rightEnemyBorder >= leftPlayerBorder && leftPlayerBorder >= this.x) || (rightPlayerBorder >= leftEnemyBorder && rightPlayerBorder <= rightEnemyBorder))
+        {
+            // There is a collision
+            return true;
+        }
+    }
+    return false;
+};
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
-    this.x = this.x + this.speed * dt;
+    if(game.active)
+    {
+        if(this.checkCollision())
+        {
+            game.loseLife();
+        } else {
+            if(this.x <505)
+            {
+                this.x = this.x + this.speed * dt;
+            } else {
+                this.x = -100;
+                this.line = Math.floor(Math.random() * 3) + 1;
+                this.y = lines[this.line];
+            }
+        }
+    }
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
@@ -31,32 +60,133 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-var Game = function()
+var UserInterface = function() {
+
+};
+
+UserInterface.prototype.start = function()
+{
+    game.start();
+    player.playerName = document.getElementById('playerName').value;
+    document.getElementById('startButton').setAttribute("disabled", "disabled");
+    document.getElementById('playerName').setAttribute("disabled", "disabled");
+};
+
+UserInterface.prototype.updateScore = function(score)
+{
+    document.getElementById('score').innerText = ''+score;
+};
+
+UserInterface.prototype.updateLevel = function(level)
+{
+    document.getElementById('level').innerText = ''+level;
+};
+
+UserInterface.prototype.updateLives = function(lives)
+{
+    var images = '';
+    for(var i = 0; i < lives; i++)
+    {
+        images = images + '<img src="images/Heart.png" height="50px" />';
+    }
+    document.getElementById('livesLeft').innerHTML = images;
+};
+
+UserInterface.prototype.lost = function()
+{
+    document.getElementById('highScore').innerText = game.highestScore;
+    document.getElementById('startButton').removeAttribute("disabled");
+    document.getElementById('playerName').removeAttribute("disabled");
+    if(game.highestScore == game.score)
+    {
+        document.getElementById('playerHighScore').innerText = player.playerName;
+        alert("Congrats!! You achieved a new high score!");
+    } else {
+        alert("Game Over! Try again!");
+    }
+};
+
+var ui = new UserInterface();
+
+
+var Game = function() {
+    this.highestScore=0;
+    this.init();
+};
+
+Game.prototype.init = function()
 {
     this.level = 1;
-    this.baseSpeed = 20;
+    this.baseSpeed = 40;
     this.score = 0;
+    this.active = false;
 };
 
-Game.prototype.reset = function()
+Game.prototype.lost = function()
 {
+    if(this.score>this.highestScore)
+    {
+        this.highestScore = this.score;
+    }
+    ui.lost();
+    this.stop();
+};
+
+Game.prototype.loseLife = function()
+{
+    if(--player.lives === 0)
+    {
+        this.lost();
+    } else {
+        var lives = player.lives;
+        ui.updateLives(player.lives);
+        game.reset();
+        player.lives = lives;
+    }
+};
+
+Game.prototype.stop = function()
+{
+    this.active = false;
+};
+
+Game.prototype.instantiateEnemies = function(enemiesLeft) {
+    var enemy = new Enemy();
+    allEnemies.push(enemy);
+    if(--enemiesLeft>0)
+    {
+        setTimeout(300, this.instantiateEnemies(enemiesLeft));
+    }
+};
+
+Game.prototype.enemies = function() {
+    var enemies = (3 + Math.floor((this.level-1) / 2));
+    return enemies;
+};
+Game.prototype.reset = function() {
     allEnemies = [];
-    var enemyOne = new Enemy();
-    var enemyTwo = new Enemy();
-    var enemyThree = new Enemy();
-    allEnemies.push(enemyOne);
-    allEnemies.push(enemyTwo);
-    allEnemies.push(enemyThree);
+    this.instantiateEnemies(this.enemies());
+    var playerName = player.playerName;
     player = new Player();
+    player.playerName = playerName;
 };
 
-Game.prototype.start = function()
-{
+Game.prototype.start = function() {
+    this.init();
+    this.reset();
+    this.active = true;
+};
+
+Game.prototype.levelUp = function() {
+    this.level = this.level + 1;
+    this.score = this.score + this.level * 100;
+    this.baseSpeed = this.baseSpeed * 1.1;
+    ui.updateLevel(this.level);
+    ui.updateScore(this.score);
     this.reset();
 };
 
-Game.prototype.maxSpeed = function()
-{
+Game.prototype.maxSpeed = function() {
     return (1 + (this.level -1) / 4) * this.baseSpeed;
 };
 var Player = function() {
@@ -67,21 +197,26 @@ var Player = function() {
     this.x = columns[this.column];
     this.y = lines[this.line];
     this.lives = 3;
+    this.width = 80;
+    this.playerName='';
 };
 
-Player.prototype.updateX = function()
+Player.prototype.updateCharacter = function(character)
 {
+    this.sprite = character;
+};
+
+Player.prototype.updateX = function() {
     this.x = columns[this.column];
 };
-Player.prototype.updateY = function()
-{
+
+Player.prototype.updateY = function() {
     this.y = lines[this.line];
 };
 
 //Player.startingX = columns[2];
 //Player.startingY = lines[4];
-Player.prototype.checkLeftBoundary = function()
-{
+Player.prototype.checkLeftBoundary = function() {
     if(this.column >= 1)
     {
         return true;
@@ -96,8 +231,7 @@ Player.prototype.checkLeftBoundary = function()
     }*/
 };
 
-Player.prototype.checkRightBoundary= function()
-{
+Player.prototype.checkRightBoundary= function() {
     if(this.column <= 3)
     {
         return true;
@@ -110,8 +244,7 @@ Player.prototype.checkRightBoundary= function()
         return false;
     }*/
 };
-Player.prototype.checkUpperBoundary= function()
-{
+Player.prototype.checkUpperBoundary= function() {
     if(this.line >=1)
     {
         return true;
@@ -124,9 +257,8 @@ Player.prototype.checkUpperBoundary= function()
         return false;
     }*/
 };
-Player.prototype.checkBottomBoundary= function()
-{
-    if(this.line <=3)
+Player.prototype.checkBottomBoundary= function() {
+    if(this.line <=4)
     {
         return true;
     }
@@ -138,54 +270,60 @@ Player.prototype.checkBottomBoundary= function()
         return false;
     }*/
 };
-Player.prototype.update = function()
-{
-    if(this.lastPressedKey!=undefined)
+Player.prototype.update = function() {
+    if(game.active)
     {
-        switch(this.lastPressedKey)
+        if(this.lastPressedKey!==undefined)
         {
-            case 'left':
-                if(this.checkLeftBoundary())
-                {
-                    this.column = this.column-1;
-                    this.updateX();
-                }
-                break;
-            case 'right':
-                if(this.checkRightBoundary())
-                {
-                    this.column = this.column+1;
-                    this.updateX();
-                }
-                break;
-            case 'up':
-                if(this.checkUpperBoundary())
-                {
-                    this.line = this.line-1;
-                    this.updateY();
-                }
-                break;
-            case 'down':
-                if(this.checkBottomBoundary())
-                {
-                    this.line = this.line+1;
-                    this.updateY();
-                }
-                break;
-            default:
-                break;
+            switch(this.lastPressedKey)
+            {
+                case 'left':
+                    if(this.checkLeftBoundary())
+                    {
+                        this.column = this.column-1;
+                        this.updateX();
+                    }
+                    break;
+                case 'right':
+                    if(this.checkRightBoundary())
+                    {
+                        this.column = this.column+1;
+                        this.updateX();
+                    }
+                    break;
+                case 'up':
+                    if(this.checkUpperBoundary())
+                    {
+                        this.line = this.line-1;
+                        this.updateY();
+                    }
+                    break;
+                case 'down':
+                    if(this.checkBottomBoundary())
+                    {
+                        this.line = this.line+1;
+                        this.updateY();
+                    }
+                    break;
+                default:
+                    break;
+            }
+            this.lastPressedKey=undefined;
         }
+        if(this.line === 0)
+        {
+            game.levelUp();
+        }
+    } else {
         this.lastPressedKey=undefined;
     }
 };
 
-Player.prototype.render = function()
-{
+Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-Player.prototype.handleInput = function(key)
-{
+Player.prototype.handleInput = function(key) {
     this.lastPressedKey = key;
 };
 
