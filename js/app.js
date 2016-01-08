@@ -106,9 +106,6 @@ UserInterface.prototype.lost = function()
     }
 };
 
-var ui = new UserInterface();
-
-
 var Game = function() {
     this.highestScore=0;
     this.init();
@@ -140,7 +137,7 @@ Game.prototype.loseLife = function()
     } else {
         var lives = player.lives;
         ui.updateLives(player.lives);
-        game.reset();
+        this.reset();
         player.lives = lives;
     }
 };
@@ -167,8 +164,10 @@ Game.prototype.reset = function() {
     allEnemies = [];
     this.instantiateEnemies(this.enemies());
     var playerName = player.playerName;
+    var playerLives = player.lives;
     player = new Player();
     player.playerName = playerName;
+    player.lives = playerLives;
 };
 
 Game.prototype.start = function() {
@@ -330,14 +329,9 @@ Player.prototype.handleInput = function(key) {
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
+var ui = new UserInterface();
 var game = new Game();
 var allEnemies = [];
-var enemyOne = new Enemy();
-var enemyTwo = new Enemy();
-var enemyThree = new Enemy();
-allEnemies.push(enemyOne);
-allEnemies.push(enemyTwo);
-allEnemies.push(enemyThree);
 var player = new Player();
 
 
