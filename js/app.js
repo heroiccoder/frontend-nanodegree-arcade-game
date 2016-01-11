@@ -60,6 +60,7 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+// This class will have all the methods to interact with the user interface.
 var UserInterface = function() {
 
 };
